@@ -1,6 +1,13 @@
 -- TSV → Parquet conversion for one Snowplow incremental load.
 -- run-batch.sh substitutes __TSV_DIR__ and __PARQUET_DIR__ with absolute paths.
 
+-- Force single-file parquet output. minimum_parallel_output_files (default 4)
+-- caps writer-side fan-out; target_partitions caps execution-side parallelism.
+-- allow_single_file_parallelism stays true so column/row-group serialization
+-- within the single output file remains parallel.
+SET datafusion.execution.target_partitions = 1;
+SET datafusion.execution.minimum_parallel_output_files = 1;
+
 CREATE EXTERNAL TABLE enriched_raw (
   app_id                   VARCHAR,
   platform                 VARCHAR,
