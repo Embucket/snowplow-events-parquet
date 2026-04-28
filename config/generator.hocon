@@ -1,0 +1,51 @@
+{
+  events {
+    type = "Enriched"
+    format { type = "TSV" }
+    generateEnrichments = true
+  }
+
+  output {
+    type = "File"
+    path = "file:///out"
+    eventsPerFile = __EVENTS_PER_FILE__
+    compress = false
+  }
+
+  eventsTotal = __EVENTS_TOTAL__
+
+  seed = __SEED__
+
+  timestamp { type = "Now" }
+
+  eventsPerPayload { min = 1, max = 1 }
+
+  contextsPerEvent { min = 0, max = 5 }
+
+  eventFrequencies {
+    struct = 1
+    unstruct = 1
+    pageView = 5
+    pagePing = 5
+    transaction = 1
+    transactionItem = 1
+    unstructEventFrequencyDefault = 1
+    unstructEventFrequencies {
+      change_form = 1
+      funnel_interaction = 1
+      link_click = 5
+    }
+  }
+
+  duplicates {
+    natProb = 0.0
+    synProb = 0.0
+    natTotal = 1
+    synTotal = 1
+  }
+
+  rate {
+    eventsPerSecond = 50000
+    tickMillis = 500
+  }
+}
