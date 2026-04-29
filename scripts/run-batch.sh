@@ -9,7 +9,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 IMAGE="${IMAGE:-docker.io/embucket/snowplow-event-generator:embucket}"
-EVENTS_TOTAL="${EVENTS_TOTAL:-10000000}"
+EVENTS_TOTAL="${EVENTS_TOTAL:-1000000}"
 EVENTS_PER_FILE="${EVENTS_PER_FILE:-1000000}"
 KEEP_TSV="${KEEP_TSV:-0}"
 # When set, parquet is written directly to <prefix>/<RUN_ID>.parquet on S3.
