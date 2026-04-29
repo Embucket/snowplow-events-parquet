@@ -206,14 +206,13 @@ COPY (
     -- Per-schema split-out for the web_page context (mimics RDB Loader output).
     -- The generator emits canonical SDK JSON in deterministic field order
     -- (`{"schema":"…","data":{…}}`) and web_page.data only carries `id`, so the
-    -- regex is reliable for our generator's contexts JSON. Wrapped in a
-    -- LIST<STRUCT<id:STRING>> so it lands as a VARIANT-shaped parquet column
-    -- that target VARIANT columns accept via MATCH_BY_COLUMN_NAME.
+    -- regex is reliable for our generator's contexts JSON. Emitted as a JSON
+    -- string `[{"id":"<uuid>"}]`. Rustice's ARRAY is internally a Utf8 column
+    -- holding JSON; the dbt-snowplow-web package's `[0]:id::varchar` access
+    -- compiles into `variant_element(...)` against this string.
     CASE
       WHEN regexp_match(contexts, '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"') IS NOT NULL THEN
-        make_array(named_struct('id',
-          array_element(regexp_match(contexts, '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"'), 1)
-        ))
+        '[{"id":"' || array_element(regexp_match(contexts, '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"'), 1) || '"}]'
       ELSE NULL
     END                                                         AS contexts_com_snowplowanalytics_snowplow_web_page_1,
     NULLIF(se_category, '')                                     AS se_category,
@@ -293,7 +292,11 @@ COPY (
     NULLIF(event_format, '')                                    AS event_format,
     NULLIF(event_version, '')                                   AS event_version,
     NULLIF(event_fingerprint, '')                               AS event_fingerprint,
-    CAST(NULLIF(true_tstamp, '')              AS TIMESTAMP)     AS true_tstamp
+    CAST(NULLIF(true_tstamp, '')              AS TIMESTAMP)     AS true_tstamp,
+    -- Synthetic load_tstamp — RDB Loader sets this to the warehouse insert
+    -- time. now() at parquet-write time is the closest analog and is
+    -- consistent for every row in this batch.
+    CAST(now() AS TIMESTAMP)                                    AS load_tstamp
   FROM enriched_raw
 )
 TO '__PARQUET_DEST__'
