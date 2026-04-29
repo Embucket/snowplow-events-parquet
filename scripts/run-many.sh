@@ -15,7 +15,7 @@ cd "$PROJECT_ROOT"
 
 N="${1:-10}"
 CONTINUE_ON_ERROR="${CONTINUE_ON_ERROR:-0}"
-export S3_PARQUET_PREFIX="${S3_PARQUET_PREFIX:-s3://embucket-testdata/snowplow/inc1000000}"
+export S3_PARQUET_PREFIX="${S3_PARQUET_PREFIX:-s3://embucket-testdata/snowplow/events500000}"
 
 if ! [[ "$N" =~ ^[0-9]+$ ]] || (( N < 1 )); then
   echo "ERROR: N must be a positive integer (got: $N)" >&2

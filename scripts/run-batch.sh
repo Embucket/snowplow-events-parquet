@@ -12,7 +12,6 @@ IMAGE="${IMAGE:-docker.io/embucket/snowplow-event-generator:embucket}"
 EVENTS_TOTAL="${EVENTS_TOTAL:-1000000}"
 EVENTS_PER_FILE="${EVENTS_PER_FILE:-1000000}"
 KEEP_TSV="${KEEP_TSV:-0}"
-KEEP_PARQUET="${KEEP_PARQUET:-0}"
 # When set, parquet is written directly to <prefix>/<RUN_ID>.parquet on S3.
 # Requires datafusion-cli to have AWS creds (env vars: AWS_ACCESS_KEY_ID,
 # AWS_SECRET_ACCESS_KEY, AWS_REGION, optionally AWS_SESSION_TOKEN).
@@ -88,14 +87,10 @@ else
   log "KEEP_TSV=1 — leaving TSV in place."
 fi
 
-# 6. Cleanup local parquet unless explicitly kept (no-op in S3 mode).
+# 6. Cleanup local parquet (no-op in S3 mode).
 if [[ -z "$S3_PARQUET_PREFIX" ]]; then
-  if [[ "$KEEP_PARQUET" != "1" ]]; then
-    rm -rf "$PARQUET_DIR_ABS"
-    log "Removed parquet directory."
-  else
-    log "KEEP_PARQUET=1 — leaving parquet in place."
-  fi
+  rm -rf "$PARQUET_DIR_ABS"
+  log "Removed parquet directory."
 fi
 
 log "Done. Output: $PARQUET_DEST"
