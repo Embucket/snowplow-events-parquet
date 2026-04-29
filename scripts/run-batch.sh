@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-IMAGE="${IMAGE:-ghcr.io/embucket/snowplow-event-generator:embucket}"
+IMAGE="${IMAGE:-docker.io/embucket/snowplow-event-generator:embucket}"
 EVENTS_TOTAL="${EVENTS_TOTAL:-10000000}"
 EVENTS_PER_FILE="${EVENTS_PER_FILE:-1000000}"
 KEEP_TSV="${KEEP_TSV:-0}"
