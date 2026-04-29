@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-IMAGE="${IMAGE:-localhost/snowplow-event-generator:latest}"
+IMAGE="${IMAGE:-ghcr.io/embucket/snowplow-event-generator:embucket}"
 EVENTS_TOTAL="${EVENTS_TOTAL:-5000000}"
 EVENTS_PER_FILE="${EVENTS_PER_FILE:-500000}"
 KEEP_TSV="${KEEP_TSV:-0}"
@@ -41,7 +41,7 @@ sed \
   -e "s|__SEED__|$SEED|g" \
   -e "s|__EVENTS_TOTAL__|$EVENTS_TOTAL|g" \
   -e "s|__EVENTS_PER_FILE__|$EVENTS_PER_FILE|g" \
-  config/generator.hocon > "$RUN_DIR/generator.hocon"
+  config/generator.hocon >"$RUN_DIR/generator.hocon"
 
 # 2. Run the snowplow-event-generator container.
 log "Running snowplow-event-generator…"
@@ -50,7 +50,7 @@ docker run --rm \
   -v "$PROJECT_ROOT/$RUN_DIR/generator.hocon:/config.hocon:ro,Z" \
   "$IMAGE" \
   --config /config.hocon \
-  >> "$LOG" 2>&1
+  >>"$LOG" 2>&1
 
 TSV_GLOB="$TSV_DIR_ABS/enriched"
 if ! ls "$TSV_GLOB"/enriched_* >/dev/null 2>&1; then
@@ -63,11 +63,11 @@ log "Generator wrote $(find "$TSV_GLOB" -type f | wc -l) TSV file(s) ($(du -sh "
 sed \
   -e "s|__TSV_DIR__|$TSV_GLOB|g" \
   -e "s|__PARQUET_DEST__|$PARQUET_DEST|g" \
-  sql/tsv_to_parquet.sql.tmpl > "$RUN_DIR/tsv_to_parquet.sql"
+  sql/tsv_to_parquet.sql.tmpl >"$RUN_DIR/tsv_to_parquet.sql"
 
 # 4. Convert TSV → Parquet.
 log "Running datafusion-cli…"
-datafusion-cli -f "$RUN_DIR/tsv_to_parquet.sql" >> "$LOG" 2>&1
+datafusion-cli -f "$RUN_DIR/tsv_to_parquet.sql" >>"$LOG" 2>&1
 
 if [[ -n "$S3_PARQUET_PREFIX" ]]; then
   log "Parquet output: $PARQUET_DEST (uploaded by datafusion-cli)"
