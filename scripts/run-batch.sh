@@ -87,10 +87,4 @@ else
   log "KEEP_TSV=1 — leaving TSV in place."
 fi
 
-# 6. Cleanup local parquet (no-op in S3 mode).
-if [[ -z "$S3_PARQUET_PREFIX" ]]; then
-  rm -rf "$PARQUET_DIR_ABS"
-  log "Removed parquet directory."
-fi
-
 log "Done. Output: $PARQUET_DEST"
