@@ -210,9 +210,9 @@ COPY (
     -- LIST<STRUCT<id:STRING>> so it lands as a VARIANT-shaped parquet column
     -- that target VARIANT columns accept via MATCH_BY_COLUMN_NAME.
     CASE
-      WHEN substring(contexts FROM '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"') IS NOT NULL THEN
+      WHEN regexp_match(contexts, '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"') IS NOT NULL THEN
         make_array(named_struct('id',
-          substring(contexts FROM '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"')
+          array_element(regexp_match(contexts, '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"'), 1)
         ))
       ELSE NULL
     END                                                         AS contexts_com_snowplowanalytics_snowplow_web_page_1,

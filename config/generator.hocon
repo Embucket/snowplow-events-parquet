@@ -48,4 +48,15 @@
     eventsPerSecond = 50000
     tickMillis = 500
   }
+
+  # Tight userGraph so multiple events share the same domain_sessionid — lets us
+  # validate the (sid, pageIdx ∈ [0..4]) → web_page.id derivation produces 1..5
+  # distinct page_view_ids per session.
+  userGraph {
+    numUsers = 5
+    sharedIdentifierRate = 0.0
+    identifiersPerUser { cookie = 1, device = 1, ip = 1 }
+    authenticationRate = 0.0
+    distribution { type = "PowerLaw" }
+  }
 }
