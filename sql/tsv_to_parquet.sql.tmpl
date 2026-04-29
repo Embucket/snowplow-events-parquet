@@ -1,5 +1,5 @@
 -- TSV → Parquet conversion for one Snowplow incremental load.
--- run-batch.sh substitutes __TSV_DIR__ and __PARQUET_DIR__ with absolute paths.
+-- run-batch.sh substitutes __TSV_DIR__ and __PARQUET_DEST__ with absolute paths.
 
 -- Force single-file parquet output. minimum_parallel_output_files (default 4)
 -- caps writer-side fan-out; target_partitions caps execution-side parallelism.
@@ -283,7 +283,7 @@ COPY (
     CAST(NULLIF(true_tstamp, '')              AS TIMESTAMP)     AS true_tstamp
   FROM enriched_raw
 )
-TO '__PARQUET_DIR__'
+TO '__PARQUET_DEST__'
 STORED AS PARQUET
 OPTIONS (
   'format.compression' 'zstd(3)'
