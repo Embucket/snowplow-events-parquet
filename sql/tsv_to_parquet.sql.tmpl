@@ -203,6 +203,19 @@ COPY (
     NULLIF(mkt_content, '')                                     AS mkt_content,
     NULLIF(mkt_campaign, '')                                    AS mkt_campaign,
     NULLIF(contexts, '')                                        AS contexts,
+    -- Per-schema split-out for the web_page context (mimics RDB Loader output).
+    -- The generator emits canonical SDK JSON in deterministic field order
+    -- (`{"schema":"…","data":{…}}`) and web_page.data only carries `id`, so the
+    -- regex is reliable for our generator's contexts JSON. Wrapped in a
+    -- LIST<STRUCT<id:STRING>> so it lands as a VARIANT-shaped parquet column
+    -- that target VARIANT columns accept via MATCH_BY_COLUMN_NAME.
+    CASE
+      WHEN substring(contexts FROM '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"') IS NOT NULL THEN
+        make_array(named_struct('id',
+          substring(contexts FROM '"iglu:com\.snowplowanalytics\.snowplow/web_page/jsonschema/1-0-0","data":\{"id":"([^"]+)"')
+        ))
+      ELSE NULL
+    END                                                         AS contexts_com_snowplowanalytics_snowplow_web_page_1,
     NULLIF(se_category, '')                                     AS se_category,
     NULLIF(se_action, '')                                       AS se_action,
     NULLIF(se_label, '')                                        AS se_label,
